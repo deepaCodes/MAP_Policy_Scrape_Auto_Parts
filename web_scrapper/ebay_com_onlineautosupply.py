@@ -2,9 +2,9 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-csv_file_name = '../csv/TheVDubFactory_Results.csv'
+csv_file_name = '../csv/Ebay_Onlineautosupply_Results.csv'
 start_page = 1
-total_search_pages = 10
+total_search_pages = 250
 request_timeout = 30
 
 headers = {
@@ -21,36 +21,21 @@ def save_to_excel(final_result):
     print('saved to : {}'.format(csv_file_name))
 
 
-def find_sku_frm_href(product_page_link):
-    response = requests.get(product_page_link)
-    soup = BeautifulSoup(response.text, features='lxml')
-    sku = soup.find('span', {'class': 'variant-sku'}).text
-    return sku
-
-
 def get_page_result(url):
-    base_url = 'https://thevdubfactory.com'
     print('calling page - {}'.format(url))
+
     response = requests.get(url, headers=headers, timeout=request_timeout)
     response.raise_for_status()
-    next_page_results = []
-
-    print('got result for :{}'.format(url))
     soup = BeautifulSoup(response.text, features='lxml')
+    page_result = [{'name': div_el.find('a').text.strip(),
+                    'price': div_el.find('span', {'class': 's-item__price'}).text.split('$')[1]} for div_el in
+                   soup.findAll('div', {'class': 's-item__info clearfix'})]
 
-    for div_el in soup.findAll('div', {'class': 'grid__item wide--one-fifth large--one-quarter medium-down--one-half'}):
-        title = div_el.find('p', {'class': 'grid-link__title'}).text.strip()
-        price = div_el.find('p', {'class': 'grid-link__meta'}).findAll(text=True, recursive=False)[-1].strip()
-        href_link = div_el.find('a', {'class': 'grid-link'}).attrs['href']
-        product_page_link = base_url + href_link
-        sku = find_sku_frm_href(product_page_link)
-        next_page_results.append({'name': title, 'price': price,'sku':sku ,'product_link': product_page_link})
-
-    return next_page_results
+    return page_result
 
 
-def scrape_thevdubfactory():
-    pagination_url = 'https://thevdubfactory.com/collections/all?page={}'
+def scrape_ebay_onlineautosupply():
+    pagination_url = 'https://www.ebay.com/str/onlineautosupply?_pgn={}'
     final_result = []
 
     for page in range(start_page, total_search_pages):
@@ -70,7 +55,7 @@ def scrape_thevdubfactory():
 
 
 def scrape_website():
-    final_result = scrape_thevdubfactory()
+    final_result = scrape_ebay_onlineautosupply()
     save_to_excel(final_result)
 
 

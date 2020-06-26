@@ -31,7 +31,7 @@ def get_page_result(url):
 
     print('got result for :{}'.format(url))
     soup = BeautifulSoup(response.text, features='lxml')
-    result = [{'title': div_el.find('h2', {'class': 'product-grid__title'}).text.strip(),
+    result = [{'name': div_el.find('h2', {'class': 'product-grid__title'}).text.strip(),
                'price': div_el.find('div', {'class': 'product-grid__price paragraph'}).text.strip()} for div_el in
               soup.findAll('div', {'class': 'product-grid__item'})]
     for item in result:

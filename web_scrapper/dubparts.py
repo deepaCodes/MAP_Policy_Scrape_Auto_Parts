@@ -34,11 +34,11 @@ def get_collection_result(url):
     next_page_results = []
     soup = BeautifulSoup(response.text, features='lxml')
 
-    temp_res = [{'title': div_el.find('div', {'class': 'product-card__name'}).text.strip(),
+    temp_res = [{'name': div_el.find('div', {'class': 'product-card__name'}).text.strip(),
                  'price': div_el.find('div', {'class': 'product-card__price'}).text.strip()
                  if div_el.find('div', {'class': 'product-card__price'}) else None}
                 for div_el in soup.findAll('div', {'class': 'product-card__info'})]
-    actual_res = [{'title': row['title'], 'price': row['price'].split('$')[-1] if row['price'] else None}
+    actual_res = [{'name': row['name'], 'price': row['price'].split('$')[-1] if row['price'] else None}
                   for row in temp_res]
 
     return actual_res

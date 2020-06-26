@@ -2,10 +2,9 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 
-csv_file_name = '../csv/Gowesty_Results.csv'
-start_page = 0
-#page numbers increment by 30 for each page
-total_search_pages = 3000
+csv_file_name = '../csv/CarolinaDuneBuggies_Results.csv'
+start_page = 1
+total_search_pages = 100
 request_timeout = 30
 
 headers = {
@@ -35,33 +34,22 @@ def get_collection_result(url):
     response.raise_for_status()
     soup = BeautifulSoup(response.text, features='lxml')
 
-    temp_res = [{'name': div_el.find('p', {'class': 'product-name'}).text.strip(),
-                 'price': div_el.find('p', {'class': 'product-price'}).text.strip(),
-                 'sku': div_el.find('p', {'class': 'product-code'}).text.strip()} for div_el in
-                soup.findAll('div', {'class': 'product'})]
-
-    temp_res_marked_red = [{'name': div_el.find('p', {'class': 'product-name'}).text.strip(),
-                            'price': div_el.find('p', {'class': 'product-price'}).text.strip(),
-                            'sku': div_el.find('p', {'class': 'product-code'}).text.strip()
-                            } for div_el in soup.findAll('div', {'class': 'product ribbon-wrapper-red'})]
-    temp_res.extend(temp_res_marked_red)
-
-    actual_res = [{'name': row['title'], 'price': row['price'].split('$')[-1], 'sku': row['sku'].split(':')[-1].strip()}
-                  for row in temp_res]
+    actual_res = [{'name': li_el.find('div', {'class', 'head-h3 product-name'}).text,
+                   'price': li_el.find('span', {'class': 'price product-price'}).text.split('$')[-1]}
+                  for li_el in soup.findAll('li', {'class': 'product-cell box-product'})]
 
     return actual_res
 
 
-def scrape_gowesty():
-    base_url = 'https://www.gowesty.com/search-results.php?start={}&search_phrase=&sort=score'
+def scrape_carolinadunebuggies():
+    base_url = 'https://carolinadunebuggies.com/xcart5.3/?target=search&mode=search&including=all&pageId={}'
     final_result = []
 
-    for page in range(start_page, total_search_pages, 30):
+    for page in range(start_page, total_search_pages):
         link_res = get_collection_result(base_url.format(page))
         if not link_res:
             break
         final_result.extend(link_res)
-
 
     print('result count : {}'.format(len(final_result)))
 
@@ -69,7 +57,7 @@ def scrape_gowesty():
 
 
 def scrape_website():
-    final_result = scrape_gowesty()
+    final_result = scrape_carolinadunebuggies()
     save_to_excel(final_result)
 
 
